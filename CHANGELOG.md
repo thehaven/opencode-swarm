@@ -1,5 +1,330 @@
 # Changelog
 
+## [7.204.11](https://github.com/ZaxbyHub/opencode-swarm/compare/v7.204.10...v7.204.11) (2026-11-18)
+
+
+### Bug Fixes
+
+* **3730,3736:** execution review — empty-key JWE accepts a one-follower prefix and stops at real next tokens ([1a667d9](https://github.com/ZaxbyHub/opencode-swarm/commit/1a667d995eba7c76826150d3c964fa412f8240cf))
+* **3730,3736:** final-critic round 1 — commit the empty-key one-follower fix, unsigned tokens followed by extra dots, residual disclosures corrected ([cf46bcd](https://github.com/ZaxbyHub/opencode-swarm/commit/cf46bcd78fa49f798dd8d3d535b4538cb281a37c))
+* **3730,3736:** redaction fill-tolerance, five JWT shapes at both sites, win32 probe/weak-executor TTL ([7029eb7](https://github.com/ZaxbyHub/opencode-swarm/commit/7029eb7eb6f3686477b6877fcf52cd24d7fc1401))
+* **3730,3736:** redaction fill-tolerance, five JWT shapes at both sites, win32 probe/weak-executor TTL ([a481004](https://github.com/ZaxbyHub/opencode-swarm/commit/a48100437deabf16635f861f79ea550cfe7c7ff8))
+* **3730,3736:** reviewer round 1 — merge pre-starting generic spans, absorb eyJ-initial JWE tails, leftmost mixed boundary, bounded assignment probing; release fragment ([90d2013](https://github.com/ZaxbyHub/opencode-swarm/commit/90d2013ed8ff3caff2076fdb02dabf92a5e79a00))
+* **3730,3736:** reviewer round 2 — one canStartTokenAt guard predicate for every acceptance shape; exact linear assignment-candidate computation ([6752a7a](https://github.com/ZaxbyHub/opencode-swarm/commit/6752a7a13225ce96d1b98374ce61198589305597))
+* **3730,3736:** reviewer round 3 — assignment candidate anchors via the segment's cumulative run offset ([cd27a94](https://github.com/ZaxbyHub/opencode-swarm/commit/cd27a94f7d5a453f4f23c0c5487dbc46b7d7639e))
+* **3730,3736:** swarm-pr-feedback round 1 — equal-start span merge, discriminating pins, disclosure completion, stale comments ([7da4229](https://github.com/ZaxbyHub/opencode-swarm/commit/7da42299e9297e55bdf3c6004b7c25d4bb8aac28))
+* **3730,3736:** swarm-pr-feedback round 1b — Stage-B reviewer corrections ([46475fd](https://github.com/ZaxbyHub/opencode-swarm/commit/46475fd05243b8e1b65c017660787b42d34718b8))
+
+## [7.204.10](https://github.com/ZaxbyHub/opencode-swarm/compare/v7.204.9...v7.204.10) (2026-11-17)
+
+
+### Bug Fixes
+
+* **2973,3218,3251:** close PR feedback on stale quarantine comments and fragment title ([794faf5](https://github.com/ZaxbyHub/opencode-swarm/commit/794faf5ab13dc47e84568476d2b6698bc6487d62))
+* **3486:** address review feedback — exact-0700, refusal-branch tests, citation re-pin ([685bfd4](https://github.com/ZaxbyHub/opencode-swarm/commit/685bfd4f762078c4bf614aa63b6ca47836615ce3))
+* **3486:** refuse planted links on the commit-message temp directory ([9a54300](https://github.com/ZaxbyHub/opencode-swarm/commit/9a54300e125844b4d62bf36d580d1d85f7a5608a))
+* **3486:** refuse planted links on the commit-message temp directory ([b3dda32](https://github.com/ZaxbyHub/opencode-swarm/commit/b3dda32cbc72275ad9d53fffc86f4077f4940cf8))
+* **3486:** review round — prune re-proof at entry, stale-survivor pin ([8d44ac1](https://github.com/ZaxbyHub/opencode-swarm/commit/8d44ac184a4ec41c31233d15bb50ce74b22321e6))
+* **3716,3723,3724:** close PR feedback on diagnostics, redaction pins, disclosure accuracy ([fccc868](https://github.com/ZaxbyHub/opencode-swarm/commit/fccc868de041913aeed759925a8d51c229649c32))
+* **3716,3723,3724:** verification-surface, dispatch-resilience, and redaction residuals from the 3718/3719/3720 rounds ([05f935c](https://github.com/ZaxbyHub/opencode-swarm/commit/05f935cf99672ed962d3bd5c0841fae3d751600c))
+* **3716,3723,3724:** verification-surface, dispatch-resilience, and redaction residuals from the 3718/3719/3720 rounds ([5d691b7](https://github.com/ZaxbyHub/opencode-swarm/commit/5d691b7efbcb5796ba673cb7ce44975d76ed5906))
+* **ci:** repair drifted lean-evidence temp-construction citation (atomic-write ratchet) ([dd9aaa6](https://github.com/ZaxbyHub/opencode-swarm/commit/dd9aaa672189a99016ffc4d8c3d099136caa0b05))
+* **retention:** case-insensitive claim duplicate check, pin claim-lookup casing, correct test reference ([aea0914](https://github.com/ZaxbyHub/opencode-swarm/commit/aea0914fad0f753ed6193b44cfbd331a4bb0138d))
+* **retention:** closeout-critic fixes (F-3 comment, F-6 anchor, F-7 debug env, F-8 fresh outside file, empty-dir pin) ([1d9db2e](https://github.com/ZaxbyHub/opencode-swarm/commit/1d9db2e597c4f846ad58f2989930839f572f2c43))
+* **retention:** give unclaimed .swarm directories a lifecycle ([1558aa9](https://github.com/ZaxbyHub/opencode-swarm/commit/1558aa94dd753cc84130389b1ea9a34bdb7dc710))
+* **retention:** harden log writes and containment against review findings ([17f92cd](https://github.com/ZaxbyHub/opencode-swarm/commit/17f92cd56977e1c79499a3884b7d52d9070a161c))
+* **retention:** keep the .tmp spelling out of unclaimed.ts prose (atomic-write WRITER_CLASSIFICATION ratchet) ([61b702e](https://github.com/ZaxbyHub/opencode-swarm/commit/61b702eb2761a21727813b76e9de5e9257245460))
+* **retention:** prune unclaimed .swarm directories instead of refusing to delete them ([16ed06e](https://github.com/ZaxbyHub/opencode-swarm/commit/16ed06e1132dc13d5bc7fdc9df06213022dbc893))
+* **retention:** resolve PR [#3727](https://github.com/ZaxbyHub/opencode-swarm/issues/3727) review findings F-1..F-9, L-1..L-4 ([0a7a82e](https://github.com/ZaxbyHub/opencode-swarm/commit/0a7a82e57d7f09423d9e4f2a4d07a7facdcdc6ac))
+* **tests:** review round 2 — merge split import (whole-tree biome ci green), refresh macos ledger intro ([4ccadb9](https://github.com/ZaxbyHub/opencode-swarm/commit/4ccadb98894a0895f830d45ff9a2869b943c5459))
+
+## [7.204.9](https://github.com/ZaxbyHub/opencode-swarm/compare/v7.204.8...v7.204.9) (2026-11-16)
+
+
+### Bug Fixes
+
+* **3177,3403:** final-critic round 1 — re-pin providerError deep-equals for the snapshot fields, classify the new counters ([a4be0a5](https://github.com/ZaxbyHub/opencode-swarm/commit/a4be0a54a392a2e1201c99b03e3ebb28eec45b92))
+* **3177,3403:** review round 3 — serialize overlapping claims, roll back failed and thrown claims ([cb56c53](https://github.com/ZaxbyHub/opencode-swarm/commit/cb56c53c968c111aa0d51847acafc60476b69452))
+* **3177,3403:** structured lean-lane fallback classification + phase-fresh selection + all-or-nothing scope-claim activation ([fa1dc00](https://github.com/ZaxbyHub/opencode-swarm/commit/fa1dc0013fc8b96a1a41415e802f55c4452845c0))
+* **3177,3403:** structured lean-lane fallback classification + phase-fresh selection + all-or-nothing scope-claim activation ([4581f2e](https://github.com/ZaxbyHub/opencode-swarm/commit/4581f2efac1344168edc5e4abf98b176707fb8de))
+* **3177,3403:** swarm-pr-review feedback round — F-001..F-006 + epic fixture completion ([d4b4030](https://github.com/ZaxbyHub/opencode-swarm/commit/d4b4030331f001dd48562b92ab21feec7f5bc8ae))
+* **3364,3106,3691:** first-turn bundled-skill ordering, full-auto resume mode/CAS, git-init spawn diagnostics ([b8982a6](https://github.com/ZaxbyHub/opencode-swarm/commit/b8982a64c8a91a95975d7fe1d38fde29016aba45))
+* **3661,3664:** swarm-pr-review feedback round — transient executor visibility, duplicate-head skip, truncation-reason gating, pins ([a495676](https://github.com/ZaxbyHub/opencode-swarm/commit/a4956769b524f7578a02d9956e2c0dfa45860c09))
+* **3661:** identity-gated transient precedence pinned by the reviewer counterexample ([26d6f7a](https://github.com/ZaxbyHub/opencode-swarm/commit/26d6f7a3d1accbbb4ec442e4cecfc75d908fa746))
+* **3664:** reader-completeness derivation is COMPLETENESS-only (final-critic r1) ([13a97f5](https://github.com/ZaxbyHub/opencode-swarm/commit/13a97f566d42a7599b2337c8f6dbc1855058a0ed))
+* **3700,3661,3664:** mirror-comment reconciliation — F-4..F-11 closeout findings ([8fe853b](https://github.com/ZaxbyHub/opencode-swarm/commit/8fe853b8a22b1796c699ffec9265bcc355c4b4d3))
+* **3700,3664,3661:** close ten fail-open CI verification-surface defects ([cffdb59](https://github.com/ZaxbyHub/opencode-swarm/commit/cffdb59e1d73644544d00801004ebebd7e076034))
+* **3710,3712:** final-critic round 1 — sink pins, evaluation-store redaction, doc accuracy ([e501ca9](https://github.com/ZaxbyHub/opencode-swarm/commit/e501ca939530a11e13a938405164ee6290e8f500))
+* **3710,3712:** redaction-family hardening — widened bare-token corpus, persistence-boundary sanitization, normalizer wedge fix ([e7ea42e](https://github.com/ZaxbyHub/opencode-swarm/commit/e7ea42e3ae53c1cc5670926d4f988be2966c63ce))
+* **3710:** census re-pin correction — keep the collectOnce:3443 and FromReceipt:4039/:4046 hits ([8a1505a](https://github.com/ZaxbyHub/opencode-swarm/commit/8a1505a9c4ef15fd0252454d1b5f9653ac24f2d3))
+* **3710:** delta-critic round 1 — correct the jwt disclosure, pin the residual shape, and close the three test gaps ([9218148](https://github.com/ZaxbyHub/opencode-swarm/commit/92181488e53ace870fe5c188333c257bcf5e0d15))
+* **3710:** delta-review round 1 — close the bash sibling's terminal-parent gap and correct two fragment claims ([c0bc5e4](https://github.com/ZaxbyHub/opencode-swarm/commit/c0bc5e481458493ecc6f0a398ddd02b180932cc9))
+* **3710:** drop stale FromReceipt:4039 citation (line moved past the call) ([eaadc86](https://github.com/ZaxbyHub/opencode-swarm/commit/eaadc863f3844ab02f51eb5e7540ce9e0d266fba))
+* **3710:** final-critic round 2 — import ordering (biome organizeImports) ([cc3579d](https://github.com/ZaxbyHub/opencode-swarm/commit/cc3579d52775beb80071afa9dc64fbad3505a1f6))
+* **3710:** gate repairs for the round-1 batch — clock idiom + format ([1efc395](https://github.com/ZaxbyHub/opencode-swarm/commit/1efc395511c58a45a459d803b4b43e9139e5f8e0))
+* **3710:** POSIX-BRE bash normalizer — BSD/macOS sed treats '\+' as literal ([cb629fa](https://github.com/ZaxbyHub/opencode-swarm/commit/cb629fa628235e7627173083f9dd5eb0273bed48))
+* **3710:** re-pin atomic-write producers after import shifts (integration.ts:427, reviewer.ts:401) ([610fd75](https://github.com/ZaxbyHub/opencode-swarm/commit/610fd75ffccb16c48dfc3305c59a9db66b8fb45f))
+* **3710:** re-pin settle/admit census rows after the review-round comment additions ([4b5360a](https://github.com/ZaxbyHub/opencode-swarm/commit/4b5360a2ed4a5d08f35759914551e4bd921732af))
+* **3710:** re-pin the two epic phase-readiness citations after the line shift ([336a61c](https://github.com/ZaxbyHub/opencode-swarm/commit/336a61c2ef54d2552f26fd5359f4df2241597796))
+* **3710:** sharpen the jwt bound's base64-fallback wording per the delta critic's note ([46d5cff](https://github.com/ZaxbyHub/opencode-swarm/commit/46d5cffc0d8efc93c9856c2914f48410eac0e699))
+* **3710:** swarm-pr-feedback round 1 — jwt payload shape, and the spawn stdio the tests never had ([5b349cf](https://github.com/ZaxbyHub/opencode-swarm/commit/5b349cfe2136df109f480bb491a2637f5cf2665a))
+* **3710:** swarm-pr-review round 1 — bound the JWT arm, close the two raw persistence sinks, reject residual parent segments ([65fca83](https://github.com/ZaxbyHub/opencode-swarm/commit/65fca83870fdf16ad2961c7d88924d91c9058b52))
+* **review-closeout:** make the non-infrastructure re-pause refusal actionable (off-&gt;on recovery path, closeout NEW-1 — resume alone stays refused for a non-infra pause since canResumeFromProbe requires an infra reason); fragment CAS-refusal description now states the full reason-conditional guidance ([8920090](https://github.com/ZaxbyHub/opencode-swarm/commit/8920090fe86159adbccfbe59f610e2d143a0a682))
+* **review-stageb:** reason-aware retry-oversight guidance for non-infrastructure re-pause refusals (NEW-1 — reactive-verdict/denial-limit re-pauses are not retry-eligible; refusal now names the reason and points at resolve-then-resume) + fragment Why line attributes the issue's 16/16 probe vs the 19/19 ADR-0003 record + non-infra interleave test leg ([cc837c4](https://github.com/ZaxbyHub/opencode-swarm/commit/cc837c4b35f8ee90b9f4e32b770563b60175f770))
+
+## [7.204.8](https://github.com/ZaxbyHub/opencode-swarm/compare/v7.204.7...v7.204.8) (2026-11-15)
+
+
+### Bug Fixes
+
+* **ci-monitor:** verify exact-head CI and merge queue observations ([1e525fc](https://github.com/ZaxbyHub/opencode-swarm/commit/1e525fc930d14399d0aa3a167de1984894b88780))
+* **ci-monitor:** verify exact-head CI and merge queue observations ([1348ad8](https://github.com/ZaxbyHub/opencode-swarm/commit/1348ad8646e8d62670b4285ac6f27fa4f4afc5f6))
+
+## [7.204.7](https://github.com/ZaxbyHub/opencode-swarm/compare/v7.204.6...v7.204.7) (2026-11-15)
+
+
+### Bug Fixes
+
+* **3165:** feedback round — review-hardening closure ([73a7881](https://github.com/ZaxbyHub/opencode-swarm/commit/73a7881ceb5b4886130223a26329e6c1833193be))
+* **3165:** sandboxed allowlist+AC-010 tests, bare-token redaction, fail-closed Tier-3 paths ([d373ba2](https://github.com/ZaxbyHub/opencode-swarm/commit/d373ba20b3ec9a7c3cb62f66fe200a700593e6ed))
+* **3681,3680:** verification-surface residuals — strict diff parser, git-configuration shapes, no-git terminal denials ([6923575](https://github.com/ZaxbyHub/opencode-swarm/commit/6923575a52ebd0ec24260a20cc55c8caa18bd859))
+* **3699:** feedback round — cross-platform assertions, path-sized probe bound, honest disclosures ([96169fa](https://github.com/ZaxbyHub/opencode-swarm/commit/96169fa7c236517f73a906785f4f65416418ae8f))
+* **issue-tracer:** preserve Bash 3.2 checkpoint compatibility ([b843ad0](https://github.com/ZaxbyHub/opencode-swarm/commit/b843ad0e2d1dcedc8e1170abd557c2a4e31c1e8a))
+* **issue-tracer:** verify release reviews and trace evidence ([a9f7d3d](https://github.com/ZaxbyHub/opencode-swarm/commit/a9f7d3dcf27903acdc2af16e2c6ab222047c2a39))
+* **review:** address trace and native review feedback ([4bed48b](https://github.com/ZaxbyHub/opencode-swarm/commit/4bed48ba6c568ef27dde085f03551388b41517f0))
+* **review:** align generated evidence with CI contracts ([6e0c985](https://github.com/ZaxbyHub/opencode-swarm/commit/6e0c98583ea0af1c0f6dbc33b8598da617a8b7a2))
+
+## [7.204.6](https://github.com/ZaxbyHub/opencode-swarm/compare/v7.204.5...v7.204.6) (2026-11-14)
+
+
+### Bug Fixes
+
+* **3306,3308,3361:** fragment-gate hardening — byte-strict decoding, aggregator parity, argv strictness, hygiene pins ([7760ec2](https://github.com/ZaxbyHub/opencode-swarm/commit/7760ec28f51897700c460ab662edb1a3daa6279c))
+* **3306:** feedback round — timeout-state fidelity, jsonl NUL refusal, CI pins, per-test budgets ([85a29ce](https://github.com/ZaxbyHub/opencode-swarm/commit/85a29ce313422e5050320be5be94ae171a410aed))
+
+## [7.204.5](https://github.com/ZaxbyHub/opencode-swarm/compare/v7.204.4...v7.204.5) (2026-11-14)
+
+
+### Bug Fixes
+
+* **guardrails:** close breadth-review fail-opens — nested opener strip, xargs verb classification, awk -i inplace eval waiver, iterative time peel, gtime family, accurate refusals ([#3648](https://github.com/ZaxbyHub/opencode-swarm/issues/3648) [#3652](https://github.com/ZaxbyHub/opencode-swarm/issues/3652)) ([f3cdb21](https://github.com/ZaxbyHub/opencode-swarm/commit/f3cdb21a9e2a8140a10b308beb6f9a83818e36bc))
+* **guardrails:** judge awk programs, xargs-fed verbs, sudoedit, shred, chroot roots, paren-led login sudo, and GNU-time payloads ([#3648](https://github.com/ZaxbyHub/opencode-swarm/issues/3648) [#3652](https://github.com/ZaxbyHub/opencode-swarm/issues/3652)) ([5ee43f4](https://github.com/ZaxbyHub/opencode-swarm/commit/5ee43f4dd6e8c94f4da23de41457c2562582e0bf))
+* **skills:** respect the progressive-disclosure ratchet — compact the [#1120](https://github.com/ZaxbyHub/opencode-swarm/issues/1120) retro amendments ([1538ed1](https://github.com/ZaxbyHub/opencode-swarm/commit/1538ed1f4044f0183cdd42c16322e371205a7dce))
+
+## [7.204.4](https://github.com/ZaxbyHub/opencode-swarm/compare/v7.204.3...v7.204.4) (2026-11-13)
+
+
+### Bug Fixes
+
+* **3605,3601:** feedback round — per-hit Phase 4.2 table + fail-closed battery/receipt/ledger/preflight hardening ([b6106b8](https://github.com/ZaxbyHub/opencode-swarm/commit/b6106b8b5f33c4280c1ade35173f2ff352dff994))
+* **3605,3601:** verification-surface gates — battery admission proof, cluster preflight, cost/yield ledger, PR-body order, gate-state parity ([13b49ac](https://github.com/ZaxbyHub/opencode-swarm/commit/13b49acade7bf3c88d782a7961b99ec8f9286d7a))
+
+## [7.204.3](https://github.com/ZaxbyHub/opencode-swarm/compare/v7.204.2...v7.204.3) (2026-11-13)
+
+
+### Bug Fixes
+
+* **3131,3662,3554:** verification-surface authority — merge-base fall-through, session-bound Turbo bypass, derived-evidence classification ([785fb51](https://github.com/ZaxbyHub/opencode-swarm/commit/785fb51c9fddab7f8bcd98b211ea598e2c39b710))
+
+## [7.204.2](https://github.com/ZaxbyHub/opencode-swarm/compare/v7.204.1...v7.204.2) (2026-11-12)
+
+
+### Bug Fixes
+
+* **3655-3659:** closeout critic round — unborn-HEAD regression leg, truthful non-git caveat, ledger/gates backfill ([0c1f380](https://github.com/ZaxbyHub/opencode-swarm/commit/0c1f380dc64a0d0920e6b228f7d5dc92d6a6a679))
+* **3655:** git-resolved capture prefix — 8.3 short-form workspaces misclassified all dirt (FB-026) ([9986746](https://github.com/ZaxbyHub/opencode-swarm/commit/9986746aebcc157db13f847234cef59ee614dddf))
+* **stage-b:** reconcile committed coder output into reviewer-scope attribution; gate swarm_memory_* main-session registration ([#3655](https://github.com/ZaxbyHub/opencode-swarm/issues/3655), [#3659](https://github.com/ZaxbyHub/opencode-swarm/issues/3659)) ([86ff1f0](https://github.com/ZaxbyHub/opencode-swarm/commit/86ff1f07694fb91f30648029be15bc7654a6e3b3))
+
+## [7.204.1](https://github.com/ZaxbyHub/opencode-swarm/compare/v7.204.0...v7.204.1) (2026-11-12)
+
+
+### Bug Fixes
+
+* **tests:** final-critic round 1 — race-spec attempts bound, dispatch-lanes criterion diagnosis arm ([1d24adc](https://github.com/ZaxbyHub/opencode-swarm/commit/1d24adc0c2b0a46884a5fa06f8a7d2c1b71187fa))
+* **tests:** impl-review round 1 — discriminating cache-flip leg, 3248 re-anchor value pin, attempts bound, ledger headers ([7d3c554](https://github.com/ZaxbyHub/opencode-swarm/commit/7d3c554352f224f98a4a29089f173acbbf4ed3dc))
+* **tests:** re-observe a late probe termination within the bounded budget (FB-001..FB-005) ([ecdb032](https://github.com/ZaxbyHub/opencode-swarm/commit/ecdb0322ddd1fcdc13432355315e3fc033566c41))
+* **tests:** retire the 2026-11-28 quarantine wall cohort + probe/archive/ENOENT flake roots ([#2973](https://github.com/ZaxbyHub/opencode-swarm/issues/2973) [#3218](https://github.com/ZaxbyHub/opencode-swarm/issues/3218) [#3251](https://github.com/ZaxbyHub/opencode-swarm/issues/3251) [#3261](https://github.com/ZaxbyHub/opencode-swarm/issues/3261) [#3262](https://github.com/ZaxbyHub/opencode-swarm/issues/3262) [#3630](https://github.com/ZaxbyHub/opencode-swarm/issues/3630)) ([6369309](https://github.com/ZaxbyHub/opencode-swarm/commit/63693095b5b3a7c0427a72bd3cc32134e2d5b7db))
+* **tests:** retire the 2026-11-28 quarantine wall cohort + probe/archive/ENOENT flake roots ([#2973](https://github.com/ZaxbyHub/opencode-swarm/issues/2973) [#3218](https://github.com/ZaxbyHub/opencode-swarm/issues/3218) [#3251](https://github.com/ZaxbyHub/opencode-swarm/issues/3251) [#3261](https://github.com/ZaxbyHub/opencode-swarm/issues/3261) [#3262](https://github.com/ZaxbyHub/opencode-swarm/issues/3262) [#3630](https://github.com/ZaxbyHub/opencode-swarm/issues/3630)) ([d1b3c50](https://github.com/ZaxbyHub/opencode-swarm/commit/d1b3c5023b64d3c757307c2e10ad4b8680b3b3b2))
+
+## [7.204.0](https://github.com/ZaxbyHub/opencode-swarm/compare/v7.203.3...v7.204.0) (2026-11-12)
+
+
+### Features
+
+* **issue-tracer:** v3.0.2 — parallel-session claim gate, anchor pre-read, pre-push collision check ([56cd565](https://github.com/ZaxbyHub/opencode-swarm/commit/56cd565370a6b0dfdcc125f208c4180ffe9c8ebe))
+
+
+### Bug Fixes
+
+* **3616:** shell write-gate residual fail-opens (items 1-15) + [#3606](https://github.com/ZaxbyHub/opencode-swarm/issues/3606) ancestor-denial redaction ([c21c138](https://github.com/ZaxbyHub/opencode-swarm/commit/c21c1381c58435aadbc0f675fe33069484278765))
+* **3651:** delta-critic r1 — fragment merge-resolution sentence corrected (renderAncestorDenial composer wording; the denial kind is a private argument, not an explain-mirror feed); stale [#3637](https://github.com/ZaxbyHub/opencode-swarm/issues/3637)-era slot/bound pins in the redaction suite tightened (200 slot, 320 whole-message bound) ([b497d2b](https://github.com/ZaxbyHub/opencode-swarm/commit/b497d2bf2bee7aee668cd8e0cab6c4d4d1780b7c))
+* **issue-tracer:** resolve swarm-pr-review findings on the parallel-session claim gate ([ed6053f](https://github.com/ZaxbyHub/opencode-swarm/commit/ed6053f5b333e50dad94450c49030c07f1ed9053))
+
+## [7.203.3](https://github.com/ZaxbyHub/opencode-swarm/compare/v7.203.2...v7.203.3) (2026-11-12)
+
+
+### Bug Fixes
+
+* **ci:** coverage-aggregator diagnostics discriminate their failure layer; group-kill the macOS crash fixture ([#3250](https://github.com/ZaxbyHub/opencode-swarm/issues/3250), [#2738](https://github.com/ZaxbyHub/opencode-swarm/issues/2738)) ([89ec7ab](https://github.com/ZaxbyHub/opencode-swarm/commit/89ec7ab4ba51dc4411e65dd5e44d4831dab98435))
+* **ci:** name the aggregator's upstream layer, stop the misleading lcov warning, group-kill the crash fixture ([#3250](https://github.com/ZaxbyHub/opencode-swarm/issues/3250), [#2738](https://github.com/ZaxbyHub/opencode-swarm/issues/2738)) ([3071a17](https://github.com/ZaxbyHub/opencode-swarm/commit/3071a17f00654c4d482abdb4c136df742c47c738))
+* **docs:** state the exact stage b rule for turbo and lean, publish stranded release notes ([4121cd5](https://github.com/ZaxbyHub/opencode-swarm/commit/4121cd5f4d804edfc2bc4e25a6958fac075bd3ee))
+* Follow-up from PR [#3592](https://github.com/ZaxbyHub/opencode-swarm/issues/3592): ancestor denial arms (lstat-failed / symlink-junction) render raw, un-redacted ancestor paths ([#3606](https://github.com/ZaxbyHub/opencode-swarm/issues/3606)) ([8f6d96f](https://github.com/ZaxbyHub/opencode-swarm/commit/8f6d96f654694383ad56913a3d114b01247794f8))
+* Follow-up from PR [#3617](https://github.com/ZaxbyHub/opencode-swarm/issues/3617): trim subagent_type identity derivations (route role + incremental-verify trigger gate) ([#3625](https://github.com/ZaxbyHub/opencode-swarm/issues/3625)) ([31a076d](https://github.com/ZaxbyHub/opencode-swarm/commit/31a076d2670d8dd8cdbc3df35702284ea0836248))
+* **guardrails:** pin ancestor denial redaction and redact planted-link path ([#3606](https://github.com/ZaxbyHub/opencode-swarm/issues/3606)) ([c0b0a05](https://github.com/ZaxbyHub/opencode-swarm/commit/c0b0a05ce6a39cb234b5df0ad6c412e32d810f86))
+* **guardrails:** redact the planted-link path in its denial detail ([#3606](https://github.com/ZaxbyHub/opencode-swarm/issues/3606)) ([de9d157](https://github.com/ZaxbyHub/opencode-swarm/commit/de9d1570667610878f1a36d0c5f0a594108c0aa9))
+* **guardrails:** render ancestor denial paths bounded and redacted ([#3606](https://github.com/ZaxbyHub/opencode-swarm/issues/3606)) ([a7484a1](https://github.com/ZaxbyHub/opencode-swarm/commit/a7484a191f748f59f495aa39b9a983971b61e5bc))
+* **pr-review:** bind critic-lane contract to structural admission, disclosure, and exact roles ([#3358](https://github.com/ZaxbyHub/opencode-swarm/issues/3358), [#3337](https://github.com/ZaxbyHub/opencode-swarm/issues/3337), [#3341](https://github.com/ZaxbyHub/opencode-swarm/issues/3341)) ([fc0b564](https://github.com/ZaxbyHub/opencode-swarm/commit/fc0b564435ad4b1774e92c53ee2ce434839cad19))
+* **pr-review:** feedback-round closures — feedback-lane protocol clauses, DOWNGRADED|NONE refusal, committed-replay tolerance, settlement-disclosure widening ([0ea7458](https://github.com/ZaxbyHub/opencode-swarm/commit/0ea7458cfd4dae356cb2b7c28a9eb4cb7ae1dafe))
+* **pr-review:** hoist state-free admission checks, scope protocol clauses, fail-closed severities ([#3341](https://github.com/ZaxbyHub/opencode-swarm/issues/3341), [#3337](https://github.com/ZaxbyHub/opencode-swarm/issues/3337), [#3362](https://github.com/ZaxbyHub/opencode-swarm/issues/3362)) ([1c5d9aa](https://github.com/ZaxbyHub/opencode-swarm/commit/1c5d9aa9aa4e211ea07de9e86f690956c60858ac))
+* **pr-review:** re-gate fixes — mirror before receipt shortcut, discriminating F-006 rider, FR-006 splits ([f7a1793](https://github.com/ZaxbyHub/opencode-swarm/commit/f7a1793b3c8b61af3d3e32ce6b70de16e9ea94c1))
+* **pr-review:** side-effect-free admission, controller-scoped protocol clauses, fail-closed severity derivation ([#3341](https://github.com/ZaxbyHub/opencode-swarm/issues/3341), [#3337](https://github.com/ZaxbyHub/opencode-swarm/issues/3337), [#3362](https://github.com/ZaxbyHub/opencode-swarm/issues/3362)) ([da4d188](https://github.com/ZaxbyHub/opencode-swarm/commit/da4d188f1412c36c6741a273b85c12f60fe1eeba))
+* **routing:** close PR [#3639](https://github.com/ZaxbyHub/opencode-swarm/issues/3639) review feedback for trim subagent_type derivations ([539bc52](https://github.com/ZaxbyHub/opencode-swarm/commit/539bc526aa108af61efc8462dc3e27895226ece9))
+* **sandbox+ci:** host-conditional /lib64 bwrap binds, bounded probe setup, evidence capture script ([6bc9be5](https://github.com/ZaxbyHub/opencode-swarm/commit/6bc9be53cd4ed606bfdca16414e32e17c94d62e4))
+* **sandbox+ci:** host-conditional /lib64 bwrap binds, bounded probe setup, evidence capture script ([95c984e](https://github.com/ZaxbyHub/opencode-swarm/commit/95c984e7f94a59520bb1ae64972e7b5743833a20))
+* **sandbox:** close review findings on bwrap tmpfs mount order ([3b704c1](https://github.com/ZaxbyHub/opencode-swarm/commit/3b704c176e73e762bb8b0c91b1d9e842beb88b4e))
+* **sandbox:** mount bwrap tmpfs before scopes under the temp root ([6b49ba1](https://github.com/ZaxbyHub/opencode-swarm/commit/6b49ba14694b4ee9d042a480dff32b96ee3f0cae))
+* **tools:** stop turbo checks leaking across sessions, drop dead stage b bypass ([66012e2](https://github.com/ZaxbyHub/opencode-swarm/commit/66012e22dd230d1d240d90d6f99f51a2112cb1f5))
+
+## [7.203.2](https://github.com/ZaxbyHub/opencode-swarm/compare/v7.203.1...v7.203.2) (2026-11-10)
+
+
+### Bug Fixes
+
+* **commands:** refuse a blank root in reset-session, close and the agent snapshot ([851ae24](https://github.com/ZaxbyHub/opencode-swarm/commit/851ae24552c57beb6fb8dffce7f33e5719fda874))
+* **db:** refuse a blank project root instead of using the process cwd ([86618a2](https://github.com/ZaxbyHub/opencode-swarm/commit/86618a2afe84ee8b08b8fd92e6749a96249c1a3a))
+* **db:** refuse a blank project root instead of using the process cwd ([f1e718d](https://github.com/ZaxbyHub/opencode-swarm/commit/f1e718d338f9043b7ba3cd6f6958132464aec048))
+* **db:** refuse a blank root in the swarm.db writers that canonicalize first ([576471f](https://github.com/ZaxbyHub/opencode-swarm/commit/576471fcef0c5c7580bc6e12b7ac6198460ebe5c))
+* **host/v2:** carry the assistant finish so a cut-off reply fails closed on opencode 2 ([fef848b](https://github.com/ZaxbyHub/opencode-swarm/commit/fef848b60810596dab73900fe0fe87599d9afd9d))
+* **host/v2:** carry the assistant finish so a cut-off reply fails closed on opencode 2 ([94052a2](https://github.com/ZaxbyHub/opencode-swarm/commit/94052a2f013ab4c7f6949359cef14b750b322147))
+* **state:** refuse a blank root in the shared .swarm write seams ([fdebe9b](https://github.com/ZaxbyHub/opencode-swarm/commit/fdebe9bccf060e60f945da379fe186ea591b2a44))
+
+## [7.203.1](https://github.com/ZaxbyHub/opencode-swarm/compare/v7.203.0...v7.203.1) (2026-11-09)
+
+
+### Bug Fixes
+
+* **3617:** census matches every enforced shape in any legal spelling ([1cdb350](https://github.com/ZaxbyHub/opencode-swarm/commit/1cdb350b581cfd4f6e09b3360ba11fdc9cb73f7b))
+* **3617:** census tolerates whitespace before call parens; compat-form wording ([a7f644d](https://github.com/ZaxbyHub/opencode-swarm/commit/a7f644debda095018c6417bf63bd0b5e870838f5))
+* **3617:** learning-health trims before the canonical-role strip ([2e236ad](https://github.com/ZaxbyHub/opencode-swarm/commit/2e236ade4c63a74a09d1687adfc233b26d0a93de))
+* **3617:** no-route collide diagnostic also v2-gated (helper comment now accurate) ([4785848](https://github.com/ZaxbyHub/opencode-swarm/commit/4785848d5b894633ee5921e55e0d59ebedaba809))
+* **3617:** route swarm id derives from the trimmed name, like the chain resolver ([8bedc1c](https://github.com/ZaxbyHub/opencode-swarm/commit/8bedc1c731e33fb3ae84a0e7083c0535889e40a1))
+* **3617:** routed v2-skip diagnostics only on v2 hosts; scope F-05 claim ([8e77ec4](https://github.com/ZaxbyHub/opencode-swarm/commit/8e77ec4ea98f125cca9372ba60ff90d41ae9ce55))
+* **3617:** shared diagnostic sanitizer drops Unicode controls and separators ([be8d024](https://github.com/ZaxbyHub/opencode-swarm/commit/be8d0244bacbb6d85f7ed3eacc99161950141d91))
+* **agents:** one guarded agent-name derivation — task-route advance identity, incremental-verify triggers, helper retirement ([#3331](https://github.com/ZaxbyHub/opencode-swarm/issues/3331), [#3322](https://github.com/ZaxbyHub/opencode-swarm/issues/3322), [#3330](https://github.com/ZaxbyHub/opencode-swarm/issues/3330)) ([a4e8056](https://github.com/ZaxbyHub/opencode-swarm/commit/a4e8056d2127ce6d603eafbb69c45ca16d04b896))
+* Auto-detected flaky tests (merge-group) — review for quarantine ([#3263](https://github.com/ZaxbyHub/opencode-swarm/issues/3263)) ([90e78bd](https://github.com/ZaxbyHub/opencode-swarm/commit/90e78bd60d14bad4309ded9268f94e4bba05986c))
+* **ci:** revert release-owned file edits ([c84cd4f](https://github.com/ZaxbyHub/opencode-swarm/commit/c84cd4fbcf194a2b1922ce3a0a91cf80ddd49c04))
+* **guardrails:** non-literal sudo -D stops qualifying edit targets; correct sudo -i claims ([5e56c37](https://github.com/ZaxbyHub/opencode-swarm/commit/5e56c3787418279f164d8414b57e1279e1d39b57))
+* **guardrails:** relative sudo -D edit targets deny as unresolved ([1db6725](https://github.com/ZaxbyHub/opencode-swarm/commit/1db672562b99df5e75b88e4d501d540a60e14862))
+* **guardrails:** shell write-gate walk fixpoint — loop withdrawal, launcher nesting, sudo semantics, rm scope coverage ([#3586](https://github.com/ZaxbyHub/opencode-swarm/issues/3586), [#3588](https://github.com/ZaxbyHub/opencode-swarm/issues/3588), [#3591](https://github.com/ZaxbyHub/opencode-swarm/issues/3591)) ([2038011](https://github.com/ZaxbyHub/opencode-swarm/commit/2038011d12977d597d8067584055fbafa0f90787))
+* **session:** own the session state you mutate — pairing identity lifecycle + phase-monitor sessionless guard ([#3372](https://github.com/ZaxbyHub/opencode-swarm/issues/3372), [#3383](https://github.com/ZaxbyHub/opencode-swarm/issues/3383)) ([fb6c56e](https://github.com/ZaxbyHub/opencode-swarm/commit/fb6c56ec7975638b69ecc454de4c06b9aa336b82))
+* split oversized shell-write-detect test file ([9cc6da3](https://github.com/ZaxbyHub/opencode-swarm/commit/9cc6da3da4ae8590886caf108a0820a38c18d0ce))
+
+## [7.203.0](https://github.com/ZaxbyHub/opencode-swarm/compare/v7.202.3...v7.203.0) (2026-11-08)
+
+
+### Features
+
+* **issue-tracer:** rebind rows for post-approval head drift + mutation-battery honesty (v3.0.1) ([793fb73](https://github.com/ZaxbyHub/opencode-swarm/commit/793fb7385b69cc6a6a7fdee3bbf4cf0fe6aa7447))
+* **issue-tracer:** rebind rows for post-approval head drift + mutation-battery honesty (v3.0.1) ([c7a31ca](https://github.com/ZaxbyHub/opencode-swarm/commit/c7a31ca59411145cbd0caae26539f7fd6e4dea49))
+* **skills:** drive pr feedback to merge and add session retrospective ([7c073bd](https://github.com/ZaxbyHub/opencode-swarm/commit/7c073bd4706a21ff581b69270d66ded61b25856d))
+
+
+### Bug Fixes
+
+* **skills:** [#3598](https://github.com/ZaxbyHub/opencode-swarm/issues/3598) round 4 — MCP head-SHA path in architect, retro measure-before-assert ([25dfdf1](https://github.com/ZaxbyHub/opencode-swarm/commit/25dfdf13aafa4fafc2d43b3bda3473e082d082e7))
+* **skills:** [#3598](https://github.com/ZaxbyHub/opencode-swarm/issues/3598) round 5 — priority critic fallback, opencode session lookup, queue ceiling ([6bc54cc](https://github.com/ZaxbyHub/opencode-swarm/commit/6bc54ccf3e64bebe04ea2945879c9b4f8826178e))
+* **skills:** [#3598](https://github.com/ZaxbyHub/opencode-swarm/issues/3598) round 6 — affirmative merge authorization, one bound PR identity ([5011b3a](https://github.com/ZaxbyHub/opencode-swarm/commit/5011b3aa8442fc67dc081190a77faaf576a63baa))
+* **skills:** [#3607](https://github.com/ZaxbyHub/opencode-swarm/issues/3607) delta review — gates.md write-order timing, case-insensitive pin, 797-line cap held ([05cae60](https://github.com/ZaxbyHub/opencode-swarm/commit/05cae60b12da95adf54667438aa5c765ec44740f))
+* **skills:** [#3607](https://github.com/ZaxbyHub/opencode-swarm/issues/3607) restore the 797-line ratchet (prior commit landed at 798) ([749569f](https://github.com/ZaxbyHub/opencode-swarm/commit/749569fc0aca1e2b422a02cb9d17c575a97efc07))
+* **skills:** [#3607](https://github.com/ZaxbyHub/opencode-swarm/issues/3607) review round — durable pre-critic ledger, queue-trap second confirmation, contract text pins ([1ac880a](https://github.com/ZaxbyHub/opencode-swarm/commit/1ac880a09b58f71721722f27321cbc9788db2966))
+* **skills:** [#3611](https://github.com/ZaxbyHub/opencode-swarm/issues/3611) hermes follow-up — poll loop discriminates GraphQL failure from entry removal ([015baf1](https://github.com/ZaxbyHub/opencode-swarm/commit/015baf1adad0ff53a06d1347a40d74d2f775ddb5))
+* **skills:** close pr 3598 review findings for drive-to-merge ([0d56aae](https://github.com/ZaxbyHub/opencode-swarm/commit/0d56aaeb5875b1a32e0e04a93e1ebab33b6b7bf1))
+* **skills:** show copy-pasteable merge commands in ci-monitor step 4a ([ca5b67a](https://github.com/ZaxbyHub/opencode-swarm/commit/ca5b67a3c70c59cdc4a06f169573b8656c4aa41e))
+
+## [7.202.3](https://github.com/ZaxbyHub/opencode-swarm/compare/v7.202.2...v7.202.3) (2026-11-07)
+
+
+### Bug Fixes
+
+* **guardrails:** [#3587](https://github.com/ZaxbyHub/opencode-swarm/issues/3587) — bounded, home-redacted file-authority denial rendering ([023a4e3](https://github.com/ZaxbyHub/opencode-swarm/commit/023a4e3348aa6fac159c5dcf4035800f690b9583))
+* **guardrails:** [#3592](https://github.com/ZaxbyHub/opencode-swarm/issues/3592) r3 — lexical normalization-first redactPath, reason escaping probe, shell-door bound disclosed ([fa60f9a](https://github.com/ZaxbyHub/opencode-swarm/commit/fa60f9aa2f6c9653bda851b5c6358a11e08b9e22))
+* **guardrails:** [#3592](https://github.com/ZaxbyHub/opencode-swarm/issues/3592) r3 round-2 — real-toolchain format, case-insensitive UNC share fold, wording precision ([ff2779a](https://github.com/ZaxbyHub/opencode-swarm/commit/ff2779aafff88637b3fe566a72fdf3132dbce17c))
+* **pr-review:** fail the observability append closed at the safe-integer generation ceiling (3593-R4) ([921779c](https://github.com/ZaxbyHub/opencode-swarm/commit/921779c96b720d048feddf0de417d373dbe9d6cb))
+* **pr-review:** fail the observability append closed at the safe-integer generation ceiling (3593-R4) ([236126a](https://github.com/ZaxbyHub/opencode-swarm/commit/236126a9c10db31d8020f22702bb29ee23145c2a))
+
+## [7.202.2](https://github.com/ZaxbyHub/opencode-swarm/compare/v7.202.1...v7.202.2) (2026-11-07)
+
+
+### Bug Fixes
+
+* Follow-up from PR [#3533](https://github.com/ZaxbyHub/opencode-swarm/issues/3533): neutralize control characters in swarm-residue inventory names ([#3542](https://github.com/ZaxbyHub/opencode-swarm/issues/3542)) ([274bd21](https://github.com/ZaxbyHub/opencode-swarm/commit/274bd21c5d8b8a63e85b0364c00e9a57cbad830b))
+* **pr-review:** feedback round — interface parity for observabilityRevision, guardrail positive controls, incoming-generation carry leg, fragment precision ([c0b26ae](https://github.com/ZaxbyHub/opencode-swarm/commit/c0b26aed9d0ee1d348e886cbdedc44abc0fd1663))
+* **pr-review:** make the advisory append fail-open under lock exhaustion and give observability appends their own CAS generation ([5d8b760](https://github.com/ZaxbyHub/opencode-swarm/commit/5d8b760f49545c2331d40e4da6f4022da0200f74))
+* **services:** [#3580](https://github.com/ZaxbyHub/opencode-swarm/issues/3580) review round — scope fragment claims truthfully, strengthen pins ([2bf2a6b](https://github.com/ZaxbyHub/opencode-swarm/commit/2bf2a6bd3ef6cf055f880867cb3b930a595bf1f7))
+
+## [7.202.1](https://github.com/ZaxbyHub/opencode-swarm/compare/v7.202.0...v7.202.1) (2026-11-07)
+
+
+### Bug Fixes
+
+* **guardrails:** PR [#3590](https://github.com/ZaxbyHub/opencode-swarm/issues/3590) feedback round — PRR-001 marker deny, sudo -e -- edit mode, scp drive-relative, explain/sv parity, post-merge reconciliation ([6bf0253](https://github.com/ZaxbyHub/opencode-swarm/commit/6bf0253770cf5c899f09f8c25f7254d9a7f3637f))
+* **guardrails:** shell write-gate detector residuals round 4 — nested sh-c withdrawal, wrapper-consumed tee/dd windows, rm brace expansion, scp destination grammar, full-body procsub spans ([91cf444](https://github.com/ZaxbyHub/opencode-swarm/commit/91cf444ac00c3e91cbdcc1e69297a3c9bc925027))
+* **guardrails:** shell write-gate detector residuals round 4 — nested sh-c withdrawal, wrapper-consumed tee/dd windows, rm brace expansion, scp destination grammar, full-body procsub spans (closes [#3569](https://github.com/ZaxbyHub/opencode-swarm/issues/3569) [#3570](https://github.com/ZaxbyHub/opencode-swarm/issues/3570)) ([c73a228](https://github.com/ZaxbyHub/opencode-swarm/commit/c73a2283394e88db621c6f18e99564e98ec73fcd))
+
+## [7.202.0](https://github.com/ZaxbyHub/opencode-swarm/compare/v7.201.2...v7.202.0) (2026-11-06)
+
+
+### Features
+
+* **ci:** dependency-bump channel writes its own release fragment (issue input) ([a02fdcd](https://github.com/ZaxbyHub/opencode-swarm/commit/a02fdcd8ad840f9ea50060d803f7d4ec1d02b49d))
+* **ci:** dependency-bump channel writes its own release fragment (issue input) ([bf30400](https://github.com/ZaxbyHub/opencode-swarm/commit/bf304008047e8733c3456baebb1e2788a8441f0d))
+* **release:** dependency-bump channel + release-pipeline integrity ([#3501](https://github.com/ZaxbyHub/opencode-swarm/issues/3501) [#3285](https://github.com/ZaxbyHub/opencode-swarm/issues/3285) [#3527](https://github.com/ZaxbyHub/opencode-swarm/issues/3527)) ([7095bc1](https://github.com/ZaxbyHub/opencode-swarm/commit/7095bc160794c07c69dfa53c8cf26f5c79cf5526))
+
+
+### Bug Fixes
+
+* **ci:** make the dep-bump issue input required and mutation-pin the fragment guards (PRR-001/PRR-002, self-review) ([8a6e5b9](https://github.com/ZaxbyHub/opencode-swarm/commit/8a6e5b9d0b468d87535d9fe4656e9f0a062ac08b))
+* **ci:** review round PRR-003..007 — positivity guard, Why section, changed-issue refusal, exact handoff pin, fragment wording ([55d6e91](https://github.com/ZaxbyHub/opencode-swarm/commit/55d6e91fb30011937c904536faebd8301b090c93))
+* **ci:** reviewer NEW-1 — pipefail-tolerant fragment-issue extraction + nits ([cc347bf](https://github.com/ZaxbyHub/opencode-swarm/commit/cc347bfa6af0f970dd22df0cff20e341931a1005))
+* **ci:** suppress root lifecycle scripts on every dependency-bump install ([ed5d7e1](https://github.com/ZaxbyHub/opencode-swarm/commit/ed5d7e149ca2c511173829d6f417b5747a85cc0f))
+* **ci:** suppress root lifecycle scripts on every dependency-bump install (live dispatch 42048068309) ([161b5c3](https://github.com/ZaxbyHub/opencode-swarm/commit/161b5c3b0e60f938866fa4db4fae4c85bb4f5844))
+* **delegation:** feedback round — claim-settle finalize-on-landed, outcome-aware settle flush, promotion no-null-after-append (review pr3577-20261105) ([af70ed7](https://github.com/ZaxbyHub/opencode-swarm/commit/af70ed7a31e1e373981b8592089fed0ca0f66267))
+* **delegation:** per-call defer Set for route-invalidation retirement (final-critic r1) + concurrency regression leg ([af7d7c9](https://github.com/ZaxbyHub/opencode-swarm/commit/af7d7c9c489c2fec8202bb45c2d28df0bca510ea))
+* **delegation:** remediate 4.5 review — real env contract in ownership suites, fallback artifact gate-bearing check, observer promotion-failure flush ([0b64eb9](https://github.com/ZaxbyHub/opencode-swarm/commit/0b64eb96b6a7fe9c9748e6eb5a13a0c24cf17d5d))
+* **delegation:** structural route-invalidation retirement ownership + recovery-claim landing shape ([#3564](https://github.com/ZaxbyHub/opencode-swarm/issues/3564) [#3494](https://github.com/ZaxbyHub/opencode-swarm/issues/3494)) ([a1a6108](https://github.com/ZaxbyHub/opencode-swarm/commit/a1a61085acced347087e853e6549315ddebe9043))
+* **delegation:** structural route-invalidation retirement ownership + recovery-claim landing shape ([#3564](https://github.com/ZaxbyHub/opencode-swarm/issues/3564) [#3494](https://github.com/ZaxbyHub/opencode-swarm/issues/3494)) ([34c2067](https://github.com/ZaxbyHub/opencode-swarm/commit/34c2067648a4d2b82bfe27e1afe4ac76510be00c))
+* **guardrails:** close the [#3567](https://github.com/ZaxbyHub/opencode-swarm/issues/3567) review round — withdrawn-state propagation, bash-true wrapper redirects, fail-closed uncertainty channels ([384db39](https://github.com/ZaxbyHub/opencode-swarm/commit/384db39ad96fe85ab60ad63a678f61f6b3e71d20))
+* **guardrails:** close the [#3568](https://github.com/ZaxbyHub/opencode-swarm/issues/3568) review round — full procsub-body detection, bash-true quoted operands, fail-closed pre-caps ([ff7c2f4](https://github.com/ZaxbyHub/opencode-swarm/commit/ff7c2f47929f733c77c706fb85f78e03907dfd94))
+* **guardrails:** depth cap fails CLOSED — delta-critic Critical on [#3568](https://github.com/ZaxbyHub/opencode-swarm/issues/3568) ([ca7bf1c](https://github.com/ZaxbyHub/opencode-swarm/commit/ca7bf1c45e21c7dcf885bc2616ea639f77ec7a21))
+* **guardrails:** final-critic round for [#3567](https://github.com/ZaxbyHub/opencode-swarm/issues/3567) — write-path payload isolation, clobber redirect, explain parity for the cluster channel ([a99b56b](https://github.com/ZaxbyHub/opencode-swarm/commit/a99b56bad349ba87e303776fe39fadc27ded0125))
+* **guardrails:** repair the SOH-corrupted dd-of quote-strip regex (CI quality gate) ([a987f8c](https://github.com/ZaxbyHub/opencode-swarm/commit/a987f8c3ca6c420f6e5836c9d89b0254b4bf2b24))
+* **guardrails:** reviewer-revision round for [#3567](https://github.com/ZaxbyHub/opencode-swarm/issues/3567) feedback — fd redirect hoist, transitive call closure, explain routing parity ([c8d95f2](https://github.com/ZaxbyHub/opencode-swarm/commit/c8d95f2e248176031fbcc1275e4ac324d358c45a))
+* **guardrails:** reviewer-revision round for [#3568](https://github.com/ZaxbyHub/opencode-swarm/issues/3568) — touch options, attached cp -t, depth bound, dd dynamic ([f3ce461](https://github.com/ZaxbyHub/opencode-swarm/commit/f3ce46194e112dd79eeb36fcfc422f39804abe60))
+* **guardrails:** shell write-gate hardening PR 1/3 — directory state, child-scoped wrapper chdir, sh -c payload extraction ([#3491](https://github.com/ZaxbyHub/opencode-swarm/issues/3491) [#3539](https://github.com/ZaxbyHub/opencode-swarm/issues/3539)) ([4be1ebc](https://github.com/ZaxbyHub/opencode-swarm/commit/4be1ebcd2745a3e04cf82ed1ad403c056c20cfb8))
+* **guardrails:** shell write-gate hardening PR 2/3 — procsub masking + residual resolution, brace destinations ([#3491](https://github.com/ZaxbyHub/opencode-swarm/issues/3491) [#3539](https://github.com/ZaxbyHub/opencode-swarm/issues/3539)) ([47cd317](https://github.com/ZaxbyHub/opencode-swarm/commit/47cd31756bdd24d731dad842c09dcaaf2a409309))
+* **release:** swarm-pr-feedback closure — channel hardening + test-strength (PRR-001..009) ([60dab9f](https://github.com/ZaxbyHub/opencode-swarm/commit/60dab9f9bc9ddc8ba54038f269badf7cf3ba0ccb))
+
+## [7.201.2](https://github.com/ZaxbyHub/opencode-swarm/compare/v7.201.1...v7.201.2) (2026-11-04)
+
+
+### Bug Fixes
+
+* **config:** preserve full_auto.locked across loader recovery and harden sdd source reads ([a442b42](https://github.com/ZaxbyHub/opencode-swarm/commit/a442b4261f314a3742e2d65327455001a13bf145))
+* **config:** preserve full_auto.locked across loader recovery and harden sdd source reads ([ddebce5](https://github.com/ZaxbyHub/opencode-swarm/commit/ddebce5cff1abfa543173eef3de1c1d380a6a162))
+* **evidence:** derive task receipt outcomes from the durable record ([2a6effd](https://github.com/ZaxbyHub/opencode-swarm/commit/2a6effd7c91b0c8d0754d07b9310e5439179bbac))
+* **evidence:** fail closed on malformed verdicts, canonical settlement proof, md-escaped attestations ([#3561](https://github.com/ZaxbyHub/opencode-swarm/issues/3561) review round) ([0d8c240](https://github.com/ZaxbyHub/opencode-swarm/commit/0d8c240ea4d7a43590de22459dd25b7bf1b0df63))
+* **guardrails,pr-feedback:** verifier-config protection for every role + PR_FEEDBACK base binding ([#3120](https://github.com/ZaxbyHub/opencode-swarm/issues/3120), [#3396](https://github.com/ZaxbyHub/opencode-swarm/issues/3396)) ([feb02e4](https://github.com/ZaxbyHub/opencode-swarm/commit/feb02e46824ef3ad2df09ab17766fffba80fb78d))
+* **host/v2:** create lane sessions parented and move them into the worktree ([#3558](https://github.com/ZaxbyHub/opencode-swarm/issues/3558)) ([5008106](https://github.com/ZaxbyHub/opencode-swarm/commit/5008106acadb275956e6d27018550ad6bf3e2ba5))
+
+## [7.201.1](https://github.com/ZaxbyHub/opencode-swarm/compare/v7.201.0...v7.201.1) (2026-11-03)
+
+
+### Bug Fixes
+
+* **review:** close swarm-pr-review findings PRR-001/002/004/006/007/009/011/012/013 ([#3509](https://github.com/ZaxbyHub/opencode-swarm/issues/3509)/[#3516](https://github.com/ZaxbyHub/opencode-swarm/issues/3516)) ([54084b4](https://github.com/ZaxbyHub/opencode-swarm/commit/54084b443e8fb169357d2c9f6d96015ca23d9b27))
+* **review:** rename memo parameter to rawSpelling (check:path-identity) — the memo deliberately keys by caller input spelling, not canonical project identity ([6146ab3](https://github.com/ZaxbyHub/opencode-swarm/commit/6146ab3737d011a38dc4548f1215790cba776370))
+* **review:** route-receipt authorization hardening — call-scoped invalidation, fail-closed wrapper, seam consults ([#3509](https://github.com/ZaxbyHub/opencode-swarm/issues/3509), [#3516](https://github.com/ZaxbyHub/opencode-swarm/issues/3516)) ([723efca](https://github.com/ZaxbyHub/opencode-swarm/commit/723efcaad993a9582f1a2abf9084c1eb084f788a))
+
 ## [7.201.0](https://github.com/ZaxbyHub/opencode-swarm/compare/v7.200.17...v7.201.0) (2026-11-03)
 
 

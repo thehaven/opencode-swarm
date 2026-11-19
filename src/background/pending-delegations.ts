@@ -67,6 +67,7 @@ import {
 	readPrWorkflowGateStateFromDisk,
 } from '../pr-review/persistence.js';
 import { readVerdictSettlementReceipt } from '../pr-review/verdict-settlement.js';
+import { flushRouteRetirementObligation } from '../review/route-invalidation-registry.js';
 import { telemetry } from '../telemetry.js';
 import { bunWrite } from '../utils/bun-compat.js';
 import {
@@ -306,6 +307,8 @@ export interface BackgroundDelegationRecord {
 	ownedWorkflowLanes?: string[];
 	/** Dispatch-time snapshot; absent legacy records keep transcript compatibility. */
 	prReviewLegacyTranscriptCompatibility?: boolean;
+	/** Host-enforced discovery budget limit on this exact dispatch attempt. */
+	prReviewBudgetExhausted?: 'tool_calls' | 'duration';
 	/** Canonical hash of prompt/provenance inputs captured at dispatch time. */
 	promptHash?: string;
 	/** Project/root provenance captured at dispatch time. */
@@ -1029,6 +1032,7 @@ const RecordSchema = z
 			.max(11)
 			.optional(),
 		prReviewLegacyTranscriptCompatibility: z.boolean().optional(),
+		prReviewBudgetExhausted: z.enum(['tool_calls', 'duration']).optional(),
 		promptHash: z.string().optional(),
 		workspace: WorkspaceSchema.optional(),
 		taskChangeContext: TaskChangeContextSchema.optional(),
@@ -3684,6 +3688,63 @@ export async function appendDelegationTransition(
 	}
 }
 
+export const PR_REVIEW_BUDGET_EXHAUSTED = 'PR_REVIEW_BUDGET_EXHAUSTED';
+
+/** Record the host's authenticated child-session decision on the dispatch itself. */
+export async function recordPrReviewBudgetExhaustion(
+	directory: string,
+	childSessionId: string,
+	reason: NonNullable<BackgroundDelegationRecord['prReviewBudgetExhausted']>,
+): Promise<void> {
+	// A non-review invocation needs no write lock.
+	const read = findByCorrelationIdDetailed(directory, childSessionId);
+	if (
+		read.status === 'ok' &&
+		(!read.value || !isReviewBudgetLane(read.value))
+	) {
+		return;
+	}
+	await withEvidenceLock(
+		directory,
+		BACKGROUND_DELEGATIONS_FILE,
+		STORE_LOCK_AGENT,
+		STORE_LOCK_TASK,
+		async () => {
+			const records = loadRecordsForWrite(directory);
+			if (records === null) throw new Error('Delegation store is unavailable');
+			const current = findRecordForWrite(records, childSessionId);
+			if (
+				!current ||
+				current.subagentSessionId !== childSessionId ||
+				!isReviewBudgetLane(current) ||
+				(current.status !== 'pending' && current.status !== 'running') ||
+				current.prReviewBudgetExhausted ||
+				recordedPrReviewResultReceipt(current)
+			) {
+				return;
+			}
+			appendRecord(directory, {
+				...current,
+				prReviewBudgetExhausted: reason,
+				updatedAt: Math.max(current.updatedAt + 1, Date.now()),
+			});
+			maybeCompactDelegationsLocked(directory);
+		},
+	);
+}
+
+function isReviewBudgetLane(record: BackgroundDelegationRecord): boolean {
+	return Boolean(
+		record.batchId &&
+			record.laneId &&
+			record.workflowLane &&
+			record.workspace?.prHeadSha &&
+			(record.mode === 'swarm-pr-review:base' ||
+				record.mode === 'swarm-pr-review:micro' ||
+				record.mode === 'swarm-pr-review:council'),
+	);
+}
+
 export type PublishPrReviewResultReceiptOutcome =
 	| { status: 'recorded'; record: BackgroundDelegationRecord }
 	| { status: 'duplicate'; record: BackgroundDelegationRecord }
@@ -3753,6 +3814,13 @@ export async function publishPrReviewResultReceipt(
 					return;
 				}
 				const current = target.record;
+				if (current.prReviewBudgetExhausted) {
+					outcome = {
+						status: 'terminal',
+						reason: PR_REVIEW_BUDGET_EXHAUSTED,
+					};
+					return;
+				}
 				if (current.result?.prReviewResultReceipt) {
 					const existing = current.result.prReviewResultReceipt;
 					if (samePrReviewReceiptSemantics(existing, parsed.data)) {
@@ -4555,6 +4623,16 @@ export async function claimTerminalResult(
 					return;
 				}
 				if (current.status !== 'pending' && current.status !== 'running') {
+					return;
+				}
+				// A guardrail marker can land after collection loaded its snapshot.
+				// Re-observe the attempt before accepting a stale non-budget decision.
+				if (
+					current.prReviewBudgetExhausted &&
+					normalizedTerminal.status !== 'cancelled' &&
+					(normalizedTerminal.status !== 'error' ||
+						normalizedTerminal.result.error !== PR_REVIEW_BUDGET_EXHAUSTED)
+				) {
 					return;
 				}
 				// Issue #2865: refuse to persist an error/`contract` terminal
@@ -5906,6 +5984,17 @@ function sweepStaleLocked(
 			result: livenessResult,
 			terminalResult: staleTerminal,
 		});
+		// #3564: the sweep just moved the record to a durable terminal status —
+		// its route-invalidation marker (if any) can never be consulted again
+		// (claimTerminalResult refuses non-pending/running; claimDelegationIngestion
+		// refuses swept terminal status), so discharge the retirement obligation
+		// now instead of letting dead occupancy accumulate toward the capacity
+		// wedge. Idempotent: no-op when no obligation exists.
+		flushRouteRetirementObligation(
+			directory,
+			record.parentSessionId,
+			record.callID,
+		);
 		// #2482 / #2244: the sweep just moved an open record to a durable
 		// terminal status WITHOUT the claim path emitting the terminal event
 		// — by definition its `delegation_begin` is unpaired. Emit the
@@ -6408,7 +6497,19 @@ export async function promoteDelegationFallback(
 					await fs.promises.unlink(fallbackPath(directory, correlationId));
 				} catch (err) {
 					if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
-						return null;
+						// #3577 (PRR-004): the record IS durably appended to the
+						// primary ledger at this point — the promotion succeeded;
+						// only the best-effort artifact cleanup failed. Returning
+						// null here made the completion observer flush the call's
+						// route-invalidation marker for a LIVE pending record
+						// (skipping its Stage-B route consult on a later
+						// delivery). The stale artifact file is inert: reads
+						// prefer the primary ledger, and a later promote attempt
+						// with the same identity resolves `current` from the
+						// primary and re-unlinks.
+						logger.warn(
+							`[background] fallback artifact for ${correlationId} could not be unlinked after promotion; the stale artifact is inert (primary record is authoritative)`,
+						);
 					}
 				}
 				return { source: 'primary' as const, record: promoted };

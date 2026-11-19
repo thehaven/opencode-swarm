@@ -65,6 +65,7 @@ import { derivePlanId } from './plan/utils.js';
 import type { EscalationTracker } from './prm/escalation.js';
 import { clearTrajectoryCache } from './prm/trajectory-store.js';
 import type { PatternMatch, PrmEpisodeState } from './prm/types.js';
+import { _test_exports as routeInvalidationRegistryTestExports } from './review/route-invalidation-registry.js';
 import type { ReviewRouteEvidence } from './review/routing-enforcement.js';
 import { clearScopeBindings } from './scope/scope-binding.js';
 import { clearScopeBindingFromDisk } from './scope/scope-persistence.js';
@@ -302,6 +303,15 @@ export interface ReviewerScopeGeneration {
 	captureDirectory: string;
 	/** Canonical workspace identity of `captureDirectory` (issue #2100 root correctness). */
 	workspaceIdentity: string;
+	/**
+	 * Git HEAD captured when the coder dispatch began (issue #3655). The
+	 * completion lifecycle reconciles committed changes since this head into
+	 * the generation when guardrail write-routing observed nothing. Undefined
+	 * on generations created before the field existed and null on non-git
+	 * workspaces — both reconcile as degraded (fail-closed typed denial),
+	 * never as proof of no change.
+	 */
+	dispatchGitHead?: string | null;
 	declaredFiles: string[];
 	modifiedFiles: string[];
 	modifiedFileFingerprints: import('./hooks/reviewer-scope-file-fingerprint.js').ReviewerScopeFileFingerprint[];
@@ -1157,7 +1167,7 @@ export const swarmState = {
 	 * Bounded via {@link MAX_TRACKED_DISPATCH_PARENTS} (AGENTS.md invariant 8);
 	 * cleared with the other session-keyed maps on reset and end-of-session.
 	 */
-	dispatchParentByChildSession: new Map<string, string>(),
+	dispatchParentByChildSession: new Map<string, DispatchParentEntry>(),
 
 	/**
 	 * Issue #3036: injection-time dispatch facts awaiting child registration.
@@ -1241,6 +1251,10 @@ export function resetSwarmState(): void {
 		});
 	}
 	resetStandardWorktreeIsolationState();
+	// Issues #3509/#3516: the process-local route-invalidation registry is
+	// module-scoped bounded state — clear it with the rest so every test suite
+	// and /swarm reset-session starts from an empty registry (invariant 8).
+	routeInvalidationRegistryTestExports.reset();
 	resetRealtimeLearningNudgeState();
 	// v6.71+ Clear the council-mode disagreement warn-once memo so tests and
 	// fresh sessions observe consistent first-time warnings.
@@ -1369,20 +1383,40 @@ export function recordPendingDispatchAuthorization(
 }
 
 /**
+ * #3403: one dispatch-lineage entry. `writeGeneration` is a per-write
+ * monotonically increasing token allocated by every lineage write (see
+ * writeDispatchParentEntry / setDispatchParentEntry) so a failed activation's
+ * rollback can only undo ITS OWN write — a stale failure no-ops against any
+ * newer write for the same child, including a newer attempt that wrote the
+ * SAME parent (value equality alone cannot distinguish those).
+ */
+export interface DispatchParentEntry {
+	parent: string;
+	writeGeneration: number;
+}
+
+let dispatchParentWriteGeneration = 0;
+
+/**
  * Issue #3036: authoritative dispatch-lineage write (host-observed pair — the
  * delegation gate's taskMetadata path). Overwrites any earlier best-effort
  * adoption for the same child and consumes the matching pending fact so it
- * cannot be adopted by a later same-role registration.
+ * cannot be adopted by a later same-role registration. Returns the write
+ * generation allocated to this write (0 when the input was rejected).
  */
 function setDispatchParentEntry(
 	childSessionId: string,
 	parentSessionId: string,
-): void {
-	if (!childSessionId || !parentSessionId) return;
+): number {
+	if (!childSessionId || !parentSessionId) return 0;
+	dispatchParentWriteGeneration += 1;
 	// Delete-then-set refreshes insertion order so re-confirmed pairs are
 	// evicted last (FIFO by last write, not by first insert).
 	swarmState.dispatchParentByChildSession.delete(childSessionId);
-	swarmState.dispatchParentByChildSession.set(childSessionId, parentSessionId);
+	swarmState.dispatchParentByChildSession.set(childSessionId, {
+		parent: parentSessionId,
+		writeGeneration: dispatchParentWriteGeneration,
+	});
 	if (
 		swarmState.dispatchParentByChildSession.size > MAX_TRACKED_DISPATCH_PARENTS
 	) {
@@ -1393,14 +1427,21 @@ function setDispatchParentEntry(
 			swarmState.dispatchParentByChildSession.delete(oldestKey);
 		}
 	}
+	return dispatchParentWriteGeneration;
 }
 
-export function setDispatchParent(
+/**
+ * The complete Issue #3036 authoritative write (entry + expired-pending prune
+ * + exactly-one matching pending-authorization consumption). Shared by the
+ * generation-returning write entry point (writeDispatchParentEntry) so every
+ * authoritative lineage write goes through one body.
+ */
+function commitDispatchParent(
 	childSessionId: string,
 	parentSessionId: string,
-): void {
-	if (!childSessionId || !parentSessionId) return;
-	setDispatchParentEntry(childSessionId, parentSessionId);
+): number {
+	if (!childSessionId || !parentSessionId) return 0;
+	const generation = setDispatchParentEntry(childSessionId, parentSessionId);
 	const now = Date.now();
 	pruneExpiredPendingDispatchAuthorizations(now);
 	const normalizedParent = parentSessionId;
@@ -1411,13 +1452,58 @@ export function setDispatchParent(
 		(pending) => pending.parentSessionId === normalizedParent,
 	);
 	if (matchIndex >= 0) pendings.splice(matchIndex, 1);
+	return generation;
+}
+
+/**
+ * #3403: the authoritative lineage write. The delegation gate's taskMetadata
+ * uses the returned generation to scope a failed claim's rollback to exactly
+ * this write.
+ */
+export function writeDispatchParentEntry(
+	childSessionId: string,
+	parentSessionId: string,
+): number {
+	return commitDispatchParent(childSessionId, parentSessionId);
+}
+
+/**
+ * #3403: attempt-scoped lineage rollback. Acts ONLY when the live entry is
+ * still the write identified by `writtenGeneration` — a newer write for the
+ * same child (any parent, including the same parent) is never clobbered by an
+ * older failure. Restores `previousParent` as a fresh generation, or deletes
+ * the entry when this attempt's write created it.
+ *
+ * Deliberately NOT re-queued: the pending dispatch authorization the original
+ * write consumed stays consumed (the host-observed pair superseded the queued
+ * fact; restoring the pre-existing lineage is the state the failed activation
+ * should leave behind).
+ */
+export function restoreDispatchParentEntry(
+	childSessionId: string,
+	writtenGeneration: number,
+	previousParent: string | undefined,
+): void {
+	if (
+		!childSessionId ||
+		!Number.isSafeInteger(writtenGeneration) ||
+		writtenGeneration <= 0
+	)
+		return;
+	const live = swarmState.dispatchParentByChildSession.get(childSessionId);
+	if (!live || live.writeGeneration !== writtenGeneration) return;
+	if (previousParent === undefined) {
+		swarmState.dispatchParentByChildSession.delete(childSessionId);
+		return;
+	}
+	setDispatchParentEntry(childSessionId, previousParent);
 }
 
 /** Issue #3036: resolve a child session's registered dispatch parent, if any. */
 export function resolveDispatchParent(
 	childSessionId: string,
 ): string | undefined {
-	return swarmState.dispatchParentByChildSession.get(childSessionId);
+	return swarmState.dispatchParentByChildSession.get(childSessionId)?.parent;
 }
 
 /**
@@ -1452,8 +1538,8 @@ function adoptPendingDispatchAuthorization(
 /** Issue #3036: clear dispatch lineage for a session (child-keyed and parent-valued). */
 export function clearDispatchLineageForSession(sessionId: string): void {
 	swarmState.dispatchParentByChildSession.delete(sessionId);
-	for (const [child, parent] of swarmState.dispatchParentByChildSession) {
-		if (parent === sessionId) {
+	for (const [child, entry] of swarmState.dispatchParentByChildSession) {
+		if (entry.parent === sessionId) {
 			swarmState.dispatchParentByChildSession.delete(child);
 		}
 	}
@@ -1554,6 +1640,8 @@ export function startReviewerScopeGeneration(input: {
 	captureDirectory: string;
 	/** Canonical workspace identity of `captureDirectory` (scope-binding identity). */
 	workspaceIdentity: string;
+	/** Dispatch-time git HEAD for committed-change reconciliation (issue #3655). */
+	dispatchGitHead?: string | null;
 	createdAt?: number;
 }): ReviewerScopeGeneration | null {
 	const session = swarmState.agentSessions.get(input.parentSessionID);
@@ -1600,6 +1688,8 @@ export function startReviewerScopeGeneration(input: {
 		modifiedFileFingerprints: [],
 		captureFailures: [],
 		status: 'collecting',
+		dispatchGitHead:
+			input.dispatchGitHead === undefined ? null : input.dispatchGitHead,
 		createdAt: now,
 	};
 	if (!latestByTask.has(generation.taskId)) {
@@ -1958,14 +2048,20 @@ export function peekReadyReviewerScopeGeneration(input: {
 }
 
 /**
- * Inspect the single generation for a task in a NON-reviewable status
- * (`no_change` | `mergeback_pending` | `mergeback_mismatch`) so lifecycle
- * denials can name the exact typed recovery action instead of generic stale.
+ * Inspect the single generation for a task in a NON-ready status
+ * (`collecting` | `no_change` | `mergeback_pending` | `mergeback_mismatch`)
+ * so lifecycle denials can name the exact typed recovery action instead of
+ * generic stale. `collecting` was added for issue #3655's typed
+ * attribution-empty / capture-incomplete denials.
  */
 export function peekReviewerScopeGenerationByStatus(input: {
 	parentSessionID: string;
 	taskId: string;
-	status: 'no_change' | 'mergeback_pending' | 'mergeback_mismatch';
+	status:
+		| 'collecting'
+		| 'no_change'
+		| 'mergeback_pending'
+		| 'mergeback_mismatch';
 	now?: number;
 }): ReviewerScopeGeneration | null {
 	const session = swarmState.agentSessions.get(input.parentSessionID);

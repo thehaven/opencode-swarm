@@ -48,7 +48,11 @@ import {
 	resolveRegisteredAgentModel,
 	resolveRuntimeAgentModel,
 } from './config/agent-model.js';
-import { syncBundledProjectSkillsIfMissingAsync } from './config/bundled-skills.js';
+import {
+	failScheduledBundledSkillsSync,
+	registerDeferredBundledSkillsSync,
+	syncBundledProjectSkillsIfMissingAsync,
+} from './config/bundled-skills.js';
 import {
 	DEFAULT_MODELS,
 	ORCHESTRATOR_NAME,
@@ -61,6 +65,7 @@ import {
 	AutomationConfigSchema,
 	type AutoReviewConfig,
 	DispatchProtectionConfigSchema,
+	deriveSwarmIdentity,
 	GuardrailsConfigSchema,
 	KnowledgeApplicationConfigSchema,
 	KnowledgeConfigSchema,
@@ -147,6 +152,7 @@ import {
 	recordToolCall,
 } from './hooks/adversarial-detector.js';
 import { createAutoReviewHook } from './hooks/auto-review.js';
+import { createBundledSkillsFirstTurnGate } from './hooks/bundled-skills-first-turn-gate.js';
 import { createCcCommandInterceptHook } from './hooks/cc-command-intercept.js';
 import { createCoChangeSuggesterHook } from './hooks/co-change-suggester.js';
 import { cacheCohortIdAtMessage } from './hooks/cohort-cache.js';
@@ -239,7 +245,10 @@ import {
 	recordDeniedToolCall,
 } from './hooks/trajectory-logger';
 import { estimateTokens } from './hooks/utils';
-import { applyV2AgentModelOverride } from './host/v2/model-apply';
+import {
+	applyV2AgentModelOverride,
+	hasV2AgentTransformSurface,
+} from './host/v2/model-apply';
 import {
 	openCodeSwarmV2Setup,
 	type V2SetupDependencies,
@@ -342,7 +351,7 @@ import {
 import { buildPluginToolObject } from './tools/plugin-registration';
 import { reconcilePrWorkflowCheckoutReceipts } from './tools/prepare-pr-workflow-checkout.js';
 import { createTrainingCaptureObserver } from './training/capture.js';
-import { error, log, warn } from './utils';
+import { error, log, sanitizeDiagnosticScope, warn } from './utils';
 import { pushAdvisory } from './utils/advisory-queue';
 import { setGitBinaryOverride } from './utils/git-executable';
 import {
@@ -1842,9 +1851,34 @@ async function initializeOpenCodeSwarm(
 	// cannot read a SKILL.md until a later tool turn, and command-path sync remains
 	// a backstop if that practical timing assumption does not hold. It is
 	// still HARD-BOUNDED + fail-open: the async variant yields between files so
-	// withTimeout (which unref's its timer) can bound it; content-equality-checked,
+	// withTimeout can bound it; content-equality-checked,
 	// atomic-overwrite-with-rollback, symlink-guarded, byte/file-bounded. On timeout/error we
 	// fail open — the command-path sync remains as a backstop.
+	//
+	// #3364: PRE-REGISTER the deferred materialization handle at ENQUEUE time so
+	// the first-turn gate can join it even if the first chat transform arrives
+	// before the post-resolution task fires. Cost: one bounded SYNCHRONOUS
+	// realpath (canonicalRootKeyFresh, the same helper the sync itself uses at
+	// run time) plus one map write — no AWAITED I/O, init-path safe. The call
+	// is count-bounded, not time-bounded by construction (the path is warm —
+	// init already canonicalized it); repro-704 measured green with the call
+	// present (T1 160.9 ms vs the 400 ms deadline), and the init contract
+	// stays pinned by tests/unit/index-startup-contract-outcomes-2670.test.ts
+	// plus the CI repro-704 smoke leg.
+	if (bootstrapStateWritesEnabled) {
+		if (
+			registerDeferredBundledSkillsSync(bootstrapRoot) ===
+			'registration-refused'
+		) {
+			// A-3: the all-pending cap refused this root's handle — the gate
+			// degrades to 'not-started' (command-path backstop ordering).
+			// Practically unreachable (one root per plugin process); logged so
+			// a future multi-root regression is visible in diagnostics.
+			log('bundled-skills materialization registration refused (cap)', {
+				projectRoot: bootstrapRoot,
+			});
+		}
+	}
 	postResolutionTasks.push(() => {
 		if (!bootstrapStateWritesEnabled) return;
 		void withTimeout(
@@ -1862,6 +1896,12 @@ async function initializeOpenCodeSwarm(
 			log('bundled skill materialization timed out or failed (non-fatal)', {
 				error: msg,
 			});
+			// #3364: if the sync never ADOPTED the scheduled entry (it threw
+			// before starting), settle it failed so the gate cannot wait on a
+			// handle whose work will never run. No-op once adopted — after
+			// adoption only the sync promise itself settles the entry (the 2 s
+			// outer await timeout above is a race, never a cancellation).
+			failScheduledBundledSkillsSync(bootstrapRoot);
 		});
 	});
 	// Background staleness check against npm. Detached, never blocks init,
@@ -2032,13 +2072,10 @@ async function initializeOpenCodeSwarm(
 		// prefix that cannot exist — the fail-closed direction. (Base's naive
 		// split happened to yield the valid `local` here; that is an accident
 		// of splitting on the FIRST underscore, not a contract.)
-		const slicedSwarmID =
-			role !== trimmedAgentName &&
-			trimmedAgentName.toLowerCase().endsWith(`_${role}`)
-				? trimmedAgentName.slice(0, trimmedAgentName.length - role.length - 1)
-				: undefined;
-		const swarmID =
-			slicedSwarmID && !slicedSwarmID.includes('_') ? slicedSwarmID : undefined;
+		// #3330: the guarded derivation lives in one shared helper
+		// (deriveSwarmIdentity) — this site keeps the exact #3324 semantics
+		// without carrying its own copy of the guard.
+		const { swarmID } = deriveSwarmIdentity(trimmedAgentName);
 		const swarmAgents = getSwarmAgents(swarmID);
 		return {
 			exactAgentName: trimmedAgentName,
@@ -2685,6 +2722,11 @@ async function initializeOpenCodeSwarm(
 	// to the architect on their next turn via pendingAdvisoryMessages.
 	const initOrphanRecoveryAdvisoryHook =
 		createInitOrphanRecoveryAdvisoryHook(bootstrapRoot);
+	// #3364: order the first chat turn after the deferred bundled-skill
+	// materialization (single bounded wait; see the gate module for the
+	// latch/concurrency semantics and the disclosed degradation bounds).
+	const bundledSkillsFirstTurnGate =
+		createBundledSkillsFirstTurnGate(bootstrapRoot);
 
 	// Self-review advisory hook
 	const selfReviewConfig = SelfReviewConfigSchema.parse(
@@ -3962,9 +4004,17 @@ async function initializeOpenCodeSwarm(
 					// would misresolve a same-turn provider error for a
 					// swarm-prefixed primary agent onto the wrong (or an empty)
 					// chain.
+					// #3331: for a routed Task child, the route's dispatched (trimmed)
+					// name is the identity the chat boundary reports
+					// (String(input.agent) equals the subagent_type), so it is
+					// resolved FIRST — a machinery-recorded bare-role pointer
+					// (agentSessions/activeAgent) or the stripped `route.role`
+					// can resolve a DIFFERENT primary, and the resulting chain
+					// signature mismatch silently discards the advance below.
 					const routeModel = resolveTaskRouteModelChain(
 						route
-							? (swarmState.activeAgent.get(childSessionID) ??
+							? (route.agentName ??
+									swarmState.activeAgent.get(childSessionID) ??
 									swarmState.agentSessions.get(childSessionID)?.agentName ??
 									route.role)
 							: (resolveSessionChatAgent(childSessionID) ??
@@ -4009,10 +4059,39 @@ async function initializeOpenCodeSwarm(
 								typeof chainModel === 'string' &&
 								chainModel.length > 0
 							) {
-								void applyV2AgentModelOverride(
+								// #3331: the advance arm may resolve the chain from
+								// a RAW name whose spelling is not a roster key
+								// (e.g. `code-coder` with the roster keyed by
+								// `coder`, or a case variant). The v2 editor is
+								// create-or-update, so applying an unregistered
+								// spelling would mint a phantom agent. Resolve the
+								// REGISTERED key and apply that (never the raw
+								// spelling after a case-insensitive match).
+								const routedApply = resolveRegisteredRosterAgentKey(
+									agents,
 									routeModel.exactAgentName,
-									chainModel,
 								);
+								if (routedApply.registeredName) {
+									void applyV2AgentModelOverride(
+										routedApply.registeredName,
+										chainModel,
+									);
+								} else if (routedApply.ambiguous) {
+									// #3617 review PRR-001: case-colliding roster
+									// keys — skip rather than silently writing
+									// whichever colliding key hashed first.
+									logV2ApplySkip(
+										`v2 model apply skipped: registered roster keys collide case-insensitively for ${sanitizeDiagnosticScope(routeModel.exactAgentName)}`,
+									);
+								} else {
+									// #3617 review F-02: an unregistered spelling
+									// skips the v2 apply observably (the advance
+									// itself remains recorded; v1 hosts apply it
+									// at the chat boundary and log nothing here).
+									logV2ApplySkip(
+										`v2 model apply skipped: no registered roster key for ${sanitizeDiagnosticScope(routeModel.exactAgentName)} (init-time roster snapshot)`,
+									);
+								}
 							}
 						}
 					} else if (
@@ -4060,13 +4139,32 @@ async function initializeOpenCodeSwarm(
 									},
 								);
 							} else if (advanced.accepted && advanced.modelString) {
-								pushAdvisory(
-									session,
-									`MODEL FALLBACK: [primary-model-fallback:${routeModel.role}] switching ${routeModel.role} from configured primary ${routeModel.primaryModel ?? 'unknown'} to ${advanced.modelString} after a provider ${reason} error; the next message uses the fallback.`,
-									{
-										dedupeKey: `[primary-model-fallback:${routeModel.role}]`,
-									},
-								);
+								// #3617 review PRR-007: on a v2 host the sticky
+								// apply below is gated on a REGISTERED roster
+								// key — when that apply will not land, do not
+								// tell the user the model switched. On v1 the
+								// chat-boundary override applies the session
+								// fallback regardless of the roster key, so the
+								// advisory stays.
+								const noRouteSurface = hasV2AgentTransformSurface();
+								const noRouteSticky = isStickyModelError(errorSignal);
+								const noRouteApply = noRouteSticky
+									? resolveRegisteredRosterAgentKey(
+											agents,
+											routeModel.exactAgentName,
+										)
+									: {};
+								const v2ApplyLands =
+									noRouteSurface && noRouteApply.registeredName !== undefined;
+								if (!noRouteSurface || v2ApplyLands) {
+									pushAdvisory(
+										session,
+										`MODEL FALLBACK: [primary-model-fallback:${routeModel.role}] switching ${routeModel.role} from configured primary ${routeModel.primaryModel ?? 'unknown'} to ${advanced.modelString} after a provider ${reason} error; the next message uses the fallback.`,
+										{
+											dedupeKey: `[primary-model-fallback:${routeModel.role}]`,
+										},
+									);
+								}
 								// Issue #3022 (AC3): apply the advanced model on v2
 								// hosts by rewriting the REGISTERED agent's model
 								// reference (no-op on v1, where the chat-boundary
@@ -4075,11 +4173,28 @@ async function initializeOpenCodeSwarm(
 								// gate it to the sticky-appropriate error classes —
 								// retired/unavailable model or quota — never a single
 								// transient timeout/5xx.
-								if (isStickyModelError(errorSignal)) {
-									void applyV2AgentModelOverride(
-										routeModel.exactAgentName,
-										advanced.modelString,
-									);
+								if (noRouteSticky) {
+									// #3331 (same gate as the routed arm): the
+									// editor is create-or-update — apply only
+									// through a REGISTERED roster key. #3617
+									// review PRR-001: exact key first, unique
+									// case-insensitive match second, ambiguity
+									// refused; PRR-007/F-02: a skipped apply is
+									// observable, never silent.
+									if (noRouteApply.registeredName) {
+										void applyV2AgentModelOverride(
+											noRouteApply.registeredName,
+											advanced.modelString,
+										);
+									} else if (noRouteApply.ambiguous) {
+										logV2ApplySkip(
+											`v2 model apply skipped: registered roster keys collide case-insensitively for ${sanitizeDiagnosticScope(routeModel.exactAgentName)}`,
+										);
+									} else if (noRouteSurface) {
+										log(
+											`v2 model apply skipped: no registered roster key for ${sanitizeDiagnosticScope(routeModel.exactAgentName)} (init-time roster snapshot)`,
+										);
+									}
 								}
 							}
 						}
@@ -4252,6 +4367,10 @@ async function initializeOpenCodeSwarm(
 			undefined,
 			composeHandlers(
 				...[
+					// #3364 FIRST: gate the turn on bundled-skill materialization so
+					// the architect MODE self-load read cannot race the deferred copy.
+					// Single shared wait, fail-open, no input/output mutation.
+					bundledSkillsFirstTurnGate,
 					// OpenCode runs messages.transform before system.transform. Stage
 					// session-bound architect guidance against this request's live array.
 					messagesTransformArchitectEnhancerStage,
@@ -4554,8 +4673,22 @@ async function initializeOpenCodeSwarm(
 				//    dispatch denial before generic delegation processing can validate its
 				//    prompt or publish delegation, scope, or background state. Guardrails and
 				//    scope-guard remain first.
-				const prWorkflowControllerSessionID =
-					await prWorkflowSessionResolver.resolve(input.sessionID);
+				const prWorkflowTool = normalizeToolName(input.tool) ?? input.tool;
+				let prWorkflowControllerSessionID: string;
+				try {
+					prWorkflowControllerSessionID =
+						await prWorkflowSessionResolver.resolve(input.sessionID);
+				} catch (error) {
+					if (
+						prWorkflowTool !== 'abort_pr_workflow' &&
+						prWorkflowTool !== 'pr_workflow_status'
+					) {
+						throw error;
+					}
+					// The recovery tools resolve their own authority even when the
+					// strict resolver cannot read the current gate.
+					prWorkflowControllerSessionID = input.sessionID;
+				}
 				const prWorkflowToolContext = resolveToolBeforeContext(
 					input as { tool: string; sessionID: string; callID: string },
 					output as { args?: unknown },
@@ -4563,7 +4696,7 @@ async function initializeOpenCodeSwarm(
 				await enforcePrWorkflowToolBefore(
 					bootstrapRoot,
 					prWorkflowControllerSessionID,
-					normalizeToolName(input.tool) ?? input.tool,
+					prWorkflowTool,
 					prWorkflowToolContext.args ?? undefined,
 					instanceGeneratedAgentNames,
 					input.callID,
@@ -4797,9 +4930,28 @@ async function initializeOpenCodeSwarm(
 							getAgentSession(input.sessionID)?.activeInvocationId ?? 0,
 						),
 						callID: input.callID,
-						role: stripKnownSwarmPrefix(toolBeforeArgs.subagent_type),
+						// #3625: derive the route role from the TRIMMED name —
+						// the same one-token trim the sibling swarmID derivation
+						// below already applies. The suffix extractor cannot see
+						// a real `_<role>` ending through surrounding whitespace,
+						// so a padded dispatch would otherwise store the padded
+						// spelling as the role while resolveTaskRouteModelChain
+						// derives the bare role, and the chat boundary would
+						// mismatch the route.
+						role: stripKnownSwarmPrefix(toolBeforeArgs.subagent_type.trim()),
 						actionDigest: actionIdentity.digest,
-						swarmID: actionIdentity.swarm ?? undefined,
+						// #3330/#3331: the route's swarm id comes from the shared
+						// guarded derivation (fail-closed to the default swarm for
+						// malformed doubled-separator names), NOT from the action
+						// digest's trim+lowercase canonicalization (hashed into
+						// digests only, never a swarm id after this change).
+						// agentName stores the dispatched name as received; normalizeRoute
+						// trims it on store, so the session.error advance arm resolves
+						// the same identity the chat boundary sees. The swarm id is derived from the
+						// TRIMMED name, exactly as resolveTaskRouteModelChain does.
+						swarmID: deriveSwarmIdentity(toolBeforeArgs.subagent_type.trim())
+							.swarmID,
+						agentName: toolBeforeArgs.subagent_type,
 					});
 				}
 
@@ -6703,3 +6855,37 @@ export type {
 // Public declarative harness API. Callable and pure until explicitly invoked;
 // it performs no plugin-initialization work and exposes no autonomous executor.
 export { harnessMutationV1 } from './harness/public-api.js';
+
+// Issue #3617 feedback round (PRR-001): the v2 model-apply gates resolve the
+// registered roster key with an EXACT-match preference; a case-insensitive
+// match is honored only when exactly one roster key matches, and a
+// case-colliding pair ('Local' + 'local') is reported ambiguous instead of
+// silently writing the sticky override onto whichever key hashed first.
+// Module scope (hoisted): placed here so the pinned producer-citation lines
+// earlier in this file never shift.
+function resolveRegisteredRosterAgentKey(
+	agents: Record<string, unknown>,
+	exactAgentName: string,
+): { registeredName?: string; ambiguous?: true } {
+	const trimmed = exactAgentName.trim();
+	const keys = Object.keys(agents);
+	const exact = keys.find((name) => name === trimmed);
+	if (exact !== undefined) return { registeredName: exact };
+	const lower = trimmed.toLowerCase();
+	const caseMatches = keys.filter((name) => name.toLowerCase() === lower);
+	if (caseMatches.length === 1) return { registeredName: caseMatches[0] };
+	if (caseMatches.length > 1) return { ambiguous: true };
+	return {};
+}
+
+// Diagnostic identity strings are sanitized by the shared
+// sanitizeDiagnosticScope helper (src/utils/diagnostic-scope.ts).
+
+// Issue #3617 automation review (head bb0823236): the routed arm's "v2 model
+// apply skipped" diagnostics must only fire on a v2 host — on v1 the
+// applyV2AgentModelOverride call is a no-op and the advance lands at the
+// chat.message boundary, so a skip line would misreport. The no-route arm
+// uses the same helper for its collide line and noRouteSurface for no-key.
+function logV2ApplySkip(message: string): void {
+	if (hasV2AgentTransformSurface()) log(message);
+}

@@ -30,6 +30,9 @@ import { getSandboxSkipSummary } from '../sandbox/skip-state.js';
 import { sanitizeDiagnosticText } from '../scope/path-identity';
 import { readEffectiveSpecSync } from '../sdd/effective-spec';
 import { getAgentSession } from '../state.js';
+import { isPhaseSummariesId } from '../summaries/store.js';
+import { isNonBlankAbsoluteDirectory } from '../utils/path-security.js';
+import { isInternalToolEvidenceId } from '../validation/task-id.js';
 import { listCoderSettlementWalStates } from '../workflow/coder-settlement.js';
 import { renderRecoveryInvocationQuickForms } from '../workflow/recovery-invocation.js';
 import { scanWedgedStageA } from '../workflow/stage-a-repair.js';
@@ -347,8 +350,22 @@ async function checkOrphanedEvidence(
 
 	try {
 		const evidenceTaskIds = await listEvidenceTaskIds(directory);
+		// #3681 item 5: reserved fixed ids are legitimate non-plan writers —
+		// the tool-evidence bundles (single source: isInternalToolEvidenceId
+		// wraps task-id's INTERNAL_TOOL_ID_REGEX) and the synthetic phase
+		// summary buckets (isPhaseSummariesId). The loose /^retro-/ exemption
+		// is INTENTIONALLY broader than RETRO_TASK_ID_REGEX: the retro writer
+		// contract (src/tools/write-retro.ts VALID_TASK_ID) accepts the
+		// broader `retro-<alnum>` form required by /swarm close's plan-free
+		// path, and the #3554 derived-entries classifier must NOT grow these
+		// ids (bundle precedence would drop them from quality-checks,
+		// archive-retention, and summary consumers).
 		const orphaned = evidenceTaskIds.filter(
-			(id) => !planTaskIds.has(id) && !/^retro-/.test(id),
+			(id) =>
+				!planTaskIds.has(id) &&
+				!/^retro-/.test(id) &&
+				!isInternalToolEvidenceId(id) &&
+				!isPhaseSummariesId(id),
 		);
 
 		if (orphaned.length === 0) {
@@ -1032,9 +1049,13 @@ async function checkCurator(directory: string): Promise<HealthCheck> {
 /**
  * Get sandbox health-check entry.
  *
- * Consumes the cached sandbox capability probe and, if available,
- * the cached sandbox executor. Never re-probes and never crashes
- * diagnose on sandbox errors.
+ * Consumes the sandbox capability probe and, if available, the cached
+ * sandbox executor. Reuses the probe's memoized result for the process
+ * lifetime EXCEPT after a transient setup-failure probe (#3661 item 5,
+ * PR #3718): a setup-failure answer is never memoized, so a diagnose run
+ * after one re-probes rather than serving the degraded result — "never
+ * re-probes" was false once the memo-skip shipped (F-10, PR #3718 review).
+ * Never crashes diagnose on sandbox errors.
  */
 async function getSandboxStatus(sessionID?: string): Promise<HealthCheck> {
 	try {
@@ -1169,6 +1190,25 @@ export async function getDiagnoseData(
 	directory: string,
 	sessionID?: string,
 ): Promise<DiagnoseData> {
+	// A blank or relative root names no project: every check below would read
+	// (and the swarm.db probe would open) `.swarm/` under process.cwd()
+	// instead (AGENTS.md invariant 4; #3165 section B). Report it as the one
+	// failing check rather than diagnosing whatever directory the process runs in.
+	if (!isNonBlankAbsoluteDirectory(directory)) {
+		return {
+			checks: [
+				{
+					name: 'Project directory',
+					status: '❌',
+					detail: `Not a usable project root (must be a non-blank absolute path; got ${sanitizeDiagnosticText(JSON.stringify(directory), 120)})`,
+				},
+			],
+			passCount: 0,
+			totalCount: 1,
+			allPassed: false,
+			deferredWarnings: getDeferredWarnings(),
+		};
+	}
 	const checks: HealthCheck[] = [];
 
 	// Check: Version (running) — surface npm staleness so users notice when
